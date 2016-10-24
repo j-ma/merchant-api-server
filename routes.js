@@ -11,6 +11,21 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection) {
         res.json({"Message" : "Hello World !"});
     });
 
+    router.get("/todays-stats",function(req,res) {
+    	var request = new mssql.Request(connection);
+
+    	request.query(`SELECT SUM(SoldAmount) AS sales, COUNT(SoldAmount) AS visits,
+    			SUM(Points) AS points
+			FROM WebPointOrderHead
+			WHERE DATEADD(dd, 0, DATEDIFF(dd, 0, OrderTime)) = DATEADD(dd, 0, DATEDIFF(dd, 0, GETDATE()))`, function(err, rows) {
+    		if(err) {
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json(rows);
+            }
+    	});
+    });
+
     router.get("/recent-transactions",function(req,res) {
     	var request = new mssql.Request(connection);
 
