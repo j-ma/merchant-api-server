@@ -61,6 +61,22 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection) {
             }
     	});
     });
+
+    router.get("/weekly",function(req,res) {
+    	var request = new mssql.Request(connection);
+
+    	request.query(`SELECT SUM(SoldAmount) AS value, CONVERT(VARCHAR(10),OrderTime,112) AS label
+			FROM WebPointOrderHead
+			WHERE OrderTime BETWEEN (GETDATE() - 7) AND GETDATE()
+			GROUP BY CONVERT(VARCHAR(10),OrderTime,112)
+			ORDER BY CONVERT(VARCHAR(10),OrderTime,112) ASC`, function(err, rows) {
+    		if(err) {
+                res.json({"Error" : true, "Message" : err});
+            } else {
+                res.json(rows);
+            }
+    	});
+    });
 }
 
 module.exports = REST_ROUTER;
