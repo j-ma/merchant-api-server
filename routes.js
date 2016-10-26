@@ -17,7 +17,39 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection) {
     	request.query(`SELECT SUM(SoldAmount) AS sales, COUNT(SoldAmount) AS visits,
     			SUM(Points) AS points
 			FROM WebPointOrderHead
-			WHERE DATEADD(dd, 0, DATEDIFF(dd, 0, OrderTime)) = DATEADD(dd, 0, DATEDIFF(dd, 0, GETDATE()))`, function(err, rows) {
+			WHERE YEAR(OrderTime) = YEAR(GETDATE()) AND
+				DATEPART(dy, OrderTime) = DATEPART(dy, GETDATE())`, function(err, rows) {
+    		if(err) {
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json(rows);
+            }
+    	});
+    });
+
+    router.get("/weekly-stats",function(req,res) {
+    	var request = new mssql.Request(connection);
+
+    	request.query(`SELECT SUM(SoldAmount) AS sales, COUNT(SoldAmount) AS visits,
+    			SUM(Points) AS points
+			FROM WebPointOrderHead
+			WHERE OrderTime BETWEEN (GETDATE() - 7) AND GETDATE()`, function(err, rows) {
+    		if(err) {
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json(rows);
+            }
+    	});
+    });
+
+    router.get("/monthly-stats",function(req,res) {
+    	var request = new mssql.Request(connection);
+
+    	request.query(`SELECT SUM(SoldAmount) AS sales, COUNT(SoldAmount) AS visits,
+    			SUM(Points) AS points
+			FROM WebPointOrderHead
+			WHERE MONTH(OrderTime) = MONTH(GETDATE()) AND
+				YEAR(OrderTime) = YEAR(GETDATE())`, function(err, rows) {
     		if(err) {
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
